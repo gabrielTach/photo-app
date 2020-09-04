@@ -23,6 +23,14 @@ gem 'jbuilder', '~> 2.7'
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
+# Use devise for authentification
+gem 'devise'
+# Use bootstrap as css framework
+gem 'twitter-bootstrap-rails'
+gem 'devise-bootstrap-views'
+# Use jquery
+gem 'jquery-rails'
+
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.2', require: false
 
