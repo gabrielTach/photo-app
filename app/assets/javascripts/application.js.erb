@@ -1,0 +1,79 @@
+// This is a manifest file that'll be compiled into including all the files listed below.
+// Add new JavaScript/Coffee code in separate files in this directory and they'll automatically
+// be included in the compiled file accessible from http://example.com/assets/application.js
+// It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
+// the compiled file.
+//
+//= require jquery
+//= require jquery_ujs
+//= require twitter/bootstrap
+//= require_tree .
+$(document).on('ready turbolinks:load', function() {
+  var stripe = Stripe('<%= Rails.application.credentials.stripe[:public_key] %>');
+
+  /**
+   * Build the card form
+   */
+  var options = {
+    classes: {
+      base: 'form-control'
+    }
+  };
+  var elements = stripe.elements();
+
+  var card = elements.create('cardNumber', options);
+  card.mount('#card-number');
+  elements.create('cardCvc', options).mount('#card-cvc');
+  elements.create('cardExpiry', options).mount('#card-expiry');
+
+
+  /**
+   * Create the token
+   */
+  var form = document.getElementById('new_user');
+  form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    stripe.createToken(card).then(function(result) {
+      if (result.error) {
+        // Inform the customer that there was an error.
+        var errorElement = document.getElementById('card-errors');
+        console.log(result.error.message)
+        show_error(result.error.message);
+      } else {
+        // Send the token to your server.
+        stripeTokenHandler(result.token);
+      }
+    });
+  });
+
+  /**
+   * Append the token to the form
+   */
+   function stripeTokenHandler(token) {
+     // Insert the token ID into the form so it gets submitted to the server
+     var form = document.getElementById('new_user');
+     var hiddenInput = document.createElement('input');
+     hiddenInput.setAttribute('type', 'hidden');
+     hiddenInput.setAttribute('name', 'stripeToken');
+     hiddenInput.setAttribute('value', token.id);
+     form.appendChild(hiddenInput);
+
+     // Submit the form
+     form.submit();
+   }
+
+  /**
+   * Stripe's errors handling
+   */
+  show_error = function (message) {
+    if($("#flash-messages").size() < 1){
+      $('div.container form').prepend("<div id='flash-messages'></div>")
+    }
+
+    $("#flash-messages").html('<div class="alert alert-warning"><a class="close" data-dismiss="alert">×</a><div id="flash_alert">' + message + '</div></div>');
+    $('.alert').delay(5000).fadeOut(3000);
+
+    return false;
+  };
+});
